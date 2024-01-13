@@ -5,7 +5,7 @@ import Tooltip from '@mui/material/Tooltip';
 import PlaceIcon from '@mui/icons-material/PushPin';
 import { Autocomplete } from '@mui/lab';
 import { TextField, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
-import { GoogleMap, useJsApiLoader, StandaloneSearchBox } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, StandaloneSearchBox, Marker } from '@react-google-maps/api';
 import config from './config';
 import MapStyle from './MapStyle';
 const mongoose = require('mongoose');
@@ -25,18 +25,26 @@ const poiSchema = new mongoose.Schema({
 
 const libraries = ['places', 'maps'];
 
-const POI = ({ title, description, index }) => {
-    let navigate = useNavigate();
-    return (
+const POI = ({ lat, lng, title, description, index }) => {
+  let navigate = useNavigate();
+  return (
+    <Marker
+      position={{ lat, lng }}
+      onClick={() => navigate(`/poi/${title}/${description}`)}
+      icon={{
+        url: 'android-chrome-192x192.png', // using a mui pin icon
+        scaledSize: new window.google.maps.Size(50, 50) // size
+      }}
+    >
       <Tooltip title={title} placement="top">
         <PlaceIcon 
           className="drop"
           style={{ fontSize: 50, color: "#9E59DA", cursor: 'hand', animationDelay: `${index * 0.1}s` }} // Increased the fontSize value to make the marker bigger
-          onClick={() => navigate(`/poi/${title}/${description}`)}
         />
       </Tooltip>
-    );
-  };
+    </Marker>
+  );
+};
 
 function Map() { 
     const { isLoaded } = useJsApiLoader({
@@ -109,27 +117,32 @@ function Map() {
 
         <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
           <DialogTitle>Add a new point of interest</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Title"
-              fullWidth
-              value={newPOI.title}
-              onChange={e => setNewPOI({ ...newPOI, title: e.target.value })}
-            />
-            <TextField
-              margin="dense"
-              label="Description"
-              fullWidth
-              value={newPOI.description}
-              onChange={e => setNewPOI({ ...newPOI, description: e.target.value })}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddPOI}>Add</Button>
-          </DialogActions>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            handleAddPOI();
+          }}>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Title"
+                fullWidth
+                value={newPOI.title}
+                onChange={e => setNewPOI({ ...newPOI, title: e.target.value })}
+              />
+              <TextField
+                margin="dense"
+                label="Description"
+                fullWidth
+                value={newPOI.description}
+                onChange={e => setNewPOI({ ...newPOI, description: e.target.value })}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setModalOpen(false)}>Cancel</Button>
+              <Button type="submit" color="primary">Add</Button>
+            </DialogActions>
+          </form>
         </Dialog>
 
         <GoogleMap
@@ -147,7 +160,7 @@ function Map() {
               lng={location.lng}
               title={location.title}
               description={location.description}
-              key={location.title}
+              key={index}
               index={index}
             />
           ))}
