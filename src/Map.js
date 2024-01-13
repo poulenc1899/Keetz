@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
-import GoogleMapReact from 'google-map-react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import PlaceIcon from '@mui/icons-material/PushPin';
-import allowedOrigins from './allowedOrigins';
 import { Autocomplete } from '@mui/lab';
 import { TextField, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { GoogleMap, useJsApiLoader, StandaloneSearchBox } from '@react-google-maps/api';
 import config from './config';
+import MapStyle from './MapStyle';
 const mongoose = require('mongoose');
+//const hostname = window.location.hostname;
+const hostname = 'localhost';
 
 // Define the schema
 const poiSchema = new mongoose.Schema({
@@ -22,12 +23,26 @@ const poiSchema = new mongoose.Schema({
   // Create the model from the schema
   const POImodel = mongoose.model('POI', poiSchema);
 
+const libraries = ['places', 'maps'];
+
+const POI = ({ title, description, index }) => {
+    let navigate = useNavigate();
+    return (
+      <Tooltip title={title} placement="top">
+        <PlaceIcon 
+          className="drop"
+          style={{ fontSize: 50, color: "#9E59DA", cursor: 'hand', animationDelay: `${index * 0.1}s` }} // Increased the fontSize value to make the marker bigger
+          onClick={() => navigate(`/poi/${title}/${description}`)}
+        />
+      </Tooltip>
+    );
+  };
 
 function Map() { 
     const { isLoaded } = useJsApiLoader({
       id: 'google-map-script',
       googleMapsApiKey: config.googleMapsApiKey,
-      libraries: ['places', 'maps']
+      libraries: libraries
     });
 
     const [locations, setLocations] = useState([]);
@@ -37,7 +52,7 @@ function Map() {
     const [newPOI, setNewPOI] = useState({ title: '', description: '' });
 
     useEffect(() => {
-      fetch('http://192.168.2.14:3001/pois')
+      fetch(`http://${hostname}:3001/pois`)
         .then(response => {
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -56,23 +71,7 @@ function Map() {
       }, 500);
     }, []);
 
-
-const POI = ({ title, description, index }) => {
-    let navigate = useNavigate();
-    return (
-      <Tooltip title={title} placement="top">
-        <PlaceIcon 
-          className="drop"
-          style={{ fontSize: 50, color: "#9E59DA", cursor: 'hand', animationDelay: `${index * 0.1}s` }} // Increased the fontSize value to make the marker bigger
-          onClick={() => navigate(`/poi/${title}/${description}`)}
-        />
-      </Tooltip>
-    );
-  };
-
     const handleAddPOI = () => {
-      const hostname = window.location.hostname;
-      if (allowedOrigins.includes(hostname)) {
         fetch(`http://${hostname}:3001/pois`, {
           method: 'POST',
           headers: {
@@ -88,7 +87,7 @@ const POI = ({ title, description, index }) => {
           })
           .then(data => setLocations([...locations, data]))
           .catch(error => console.log('Fetch error: ', error));
-      }
+      
       setModalOpen(false);
     };
 
@@ -133,228 +132,13 @@ const POI = ({ title, description, index }) => {
           </DialogActions>
         </Dialog>
 
-        <GoogleMapReact
-          bootstrapURLKeys={{ key: config.googleMapsApiKey }}
-          defaultCenter={{ lat: 52.3702, lng: 4.8952 }}
-          defaultZoom={15}
+        <GoogleMap
+          mapContainerStyle={{ height: '93vh', width: '100%' }}
+          center={{ lat: 52.3702, lng: 4.8952 }}
+          zoom={15}
           options={{
-            styles: 
-            [
-                {
-                    "featureType": "administrative",
-                    "elementType": "labels",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "administrative",
-                    "elementType": "labels.text.fill",
-                    "stylers": [
-                        {
-                            "color": "#444444"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "landscape",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "color": "#e9e6de"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "poi",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "simplified"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "poi.attraction",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "poi.business",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "poi.government",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "poi.medical",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "poi.park",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "color": "#95da59"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "poi.place_of_worship",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "poi.school",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "poi.sports_complex",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "saturation": -100
-                        },
-                        {
-                            "lightness": 45
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road",
-                    "elementType": "labels",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.highway",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "simplified"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.highway",
-                    "elementType": "labels",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.highway.controlled_access",
-                    "elementType": "labels",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.arterial",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "simplified"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.arterial",
-                    "elementType": "labels.icon",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.local",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "simplified"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.local",
-                    "elementType": "labels",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "transit",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "water",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "color": "#7ddde6"
-                        },
-                        {
-                            "visibility": "on"
-                        }
-                    ]
-                }
-            ],
-            disableDefaultUI: true,
+            disableDefaultUI: true, // This will disable the default UI including the zoom control
+            styles: MapStyle
           }}
         >
           {renderMarkers && locations.map((location, index) => (
@@ -367,7 +151,7 @@ const POI = ({ title, description, index }) => {
               index={index}
             />
           ))}
-        </GoogleMapReact>
+        </GoogleMap>
       </div> 
     ) : <div>Loading...</div>; 
   } 

@@ -1,0 +1,35 @@
+{
+  "name": "keetz",
+  "version": "1.0.0",
+  "description": "A Points of Interest (POI) Mapping Application",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-router-dom": "6.21.1",
+    "google-map-react": "2.2.1",
+    "@react-google-maps/api": "5.15.4",
+    "@mui/material": "5.15.4",
+    "@mui/lab": "5.0.0-alpha.156",
+    "@mui/icons-material": "5.15.2",
+    "mongoose": "8.0.3"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
